@@ -1,30 +1,33 @@
 using UnityEngine;
-//
 
 public class CollectibleController : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     [SerializeField] private AudioClip collectSound;
     [SerializeField] private GameObject collectParticlePrefab;
-    void Start()
+    private GameManager gameManager;
+    private void Start()
+    {
+        gameManager = FindAnyObjectByType<GameManager>();
+    }
+
+    private void Update()
     {
 
     }
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
+            gameManager.UpdateRemaining();
             AudioSource.PlayClipAtPoint(collectSound, transform.position);
+
             Instantiate(
-            collectParticlePrefab,
-            transform.position,
-            Quaternion.identity
+                collectParticlePrefab,
+                transform.position,
+                Quaternion.identity
             );
+
             Destroy(gameObject);
         }
     }
