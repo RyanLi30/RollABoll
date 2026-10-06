@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
  * REQUIRED DEPENDENCIES: TextMeshProUGUI
  * DESCRIPTION: Handles collectible tracking and win condition
  * for the game
- * AUTHOR: Your name
+ * AUTHOR: Ryan Li
  * VERSION: 1.0
  ************************************************************/
 
