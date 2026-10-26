@@ -23,8 +23,8 @@ namespace Ryan.RollABall.Editor
             EditorSceneManager.OpenScene(ScenePath);
             RegisterLevels();
         }
-        [MenuItem("Roll-a-Ball/Create or rebuild three-lane course")]
-        public static void Create() => ThreeLaneBuilder.Create();
+        [MenuItem("Roll-a-Ball/Create or rebuild auto-run course")]
+        public static void Create() => AutoRunCourseBuilder.Create();
         public static void UpgradeRollingSky() => Create();
         public static void UpgradeHazards() => Create();
     }

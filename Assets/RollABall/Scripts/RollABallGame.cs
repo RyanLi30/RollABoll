@@ -130,16 +130,22 @@ namespace Ryan.RollABall
             GUI.Label(new Rect(42, 35, 300, 22), "RYAN LI  /  GAMEPLAY PROTOTYPE", subtitle);
             GUI.Label(new Rect(42, 59, 300, 40), "ROLL-A-BALL 3D", title);
             GUI.Label(new Rect(42, 103, 300, 24), $"LEVEL {levelNumber}/{levelCount}  -  {levelTitle}", body);
-            GUI.Label(new Rect(42, 140, 300, 22), "PURPLE = LONG JUMP  /  RED = RESTART", subtitle);
+            GUI.Label(new Rect(42, 140, 300, 22), "PURPLE = JUMP  /  RED = RESTART", subtitle);
             Panel(new Rect(width - 248, 22, 226, 115));
             GUI.Label(new Rect(width - 228, 37, 190, 22), "CUBES REMAINING", subtitle);
             GUI.Label(new Rect(width - 228, 63, 190, 30), $"{Remaining:00} / {cubes.Length:00}", counter);
-            GUI.Label(new Rect(width - 228, 104, 190, 24), $"SPEED {player.MaximumSpeed:0}  /  FALLS {player.Falls}", body);
+            GUI.Label(new Rect(width - 228, 104, 190, 24), $"SPEED {player.CurrentForwardSpeed:0.0}  /  FALLS {player.Falls}", body);
             Panel(new Rect(22, height - 66, width - 44, 44));
-            GUI.Label(new Rect(40, height - 56, width - 220, 25), "W / S  Forward / Back    A / D  Change lane    Space  Jump    R  Retry", body);
+            GUI.Label(new Rect(40, height - 56, width - 220, 25), "AUTO RUN    A / D  Change lane    Space  Jump    R  Retry", body);
             if (GUI.Button(new Rect(width - 163, height - 58, 130, 29), "Restart [R]", button)) Restart();
             Panel(new Rect(22, 184, 330, 37));
             GUI.Label(new Rect(42, 191, 300, 25), $"CHECKPOINT {player.CheckpointNumber}  /  BOUNCES {player.Bounces}", body);
+            Panel(new Rect(22, 230, 330, 52));
+            GUI.Label(new Rect(42, 236, 300, 22), "LIME = BOOST  /  ORANGE = SLOW", subtitle);
+            string speedState = player.RunStartsIn > 0 ? $"READY  {player.RunStartsIn:0.0}s" :
+                player.SpringInFlight ? "SPRING FLIGHT - A/D TO STEER" :
+                player.SpeedEffectRemaining > 0 ? $"{(player.SpeedMultiplier > 1 ? "BOOST" : "SLOW")}  x{player.SpeedMultiplier:0.00}  {player.SpeedEffectRemaining:0.0}s" : "CRUISE - KEEP MOVING";
+            GUI.Label(new Rect(42, 257, 300, 22), speedState, body);
             if (Time.time < noticeUntil)
             {
                 Panel(new Rect(width / 2 - 240, height - 115, 480, 36));

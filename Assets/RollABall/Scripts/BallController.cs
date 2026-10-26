@@ -12,6 +12,16 @@ namespace Ryan.RollABall
         [SerializeField] private bool threeLaneMode;
         [SerializeField] private float laneSpacing = 4f;
         [SerializeField] private float springMaximumSpeed = 26f;
+        [SerializeField] private bool autoRun;
+        private float speedMultiplier = 1f;
+        private float speedEffectUntil = -1f;
+        private float runStartsAt;
+        public bool AutoRun => autoRun;
+        public float RunStartsIn => Mathf.Max(0, runStartsAt - Time.time);
+        public float SpeedMultiplier => Time.time < speedEffectUntil ? speedMultiplier : 1f;
+        public float SpeedEffectRemaining => Mathf.Max(0, speedEffectUntil - Time.time);
+        public float TargetForwardSpeed => maximumSpeed * SpeedMultiplier;
+        public float CurrentForwardSpeed => body == null ? 0 : Mathf.Max(0, body.linearVelocity.z);
         public float MaximumSpeed => maximumSpeed;
         public float JumpSpeed => jumpSpeed;
         public int CurrentLane { get; private set; }
@@ -36,6 +46,7 @@ namespace Ryan.RollABall
             body = GetComponent<Rigidbody>();
             spawn = transform.position;
             body.linearDamping = 0;
+            runStartsAt = Time.time + (autoRun ? 1.8f : 0);
             CurrentLane = Mathf.Clamp(Mathf.RoundToInt(spawn.x / laneSpacing), -1, 1);
         }
 
@@ -75,7 +86,7 @@ namespace Ryan.RollABall
             {
                 springUntil = -1;
                 var landed = body.linearVelocity;
-                body.linearVelocity = new Vector3(0, landed.y, 0);
+                body.linearVelocity = new Vector3(0, landed.y, autoRun ? landed.z : 0);
             }
             if (!SpringInFlight && jumpRequestedUntil >= Time.time && lastGrounded >= Time.time - 0.1f)
             {
@@ -105,7 +116,8 @@ namespace Ryan.RollABall
                 else
                 {
                     horizontal.x = Mathf.Clamp((CurrentLane * laneSpacing - body.position.x) * 12f, -18f, 18f);
-                    float target = movement.y * maximumSpeed * (movement.y < 0 ? 0.65f : 1f);
+                    float target = autoRun ? (Time.time >= runStartsAt ? TargetForwardSpeed : 0)
+                        : movement.y * maximumSpeed * (movement.y < 0 ? 0.65f : 1f);
                     horizontal.z = Mathf.MoveTowards(horizontal.z, target, acceleration * Time.fixedDeltaTime);
                 }
             }
@@ -151,6 +163,29 @@ namespace Ryan.RollABall
             springMaximumSpeed = 26f;
         }
 
+        public void ConfigureAutoRun(float forwardSpeed)
+        {
+            ConfigureThreeLanes(forwardSpeed);
+            autoRun = true;
+            jumpSpeed = 6.5f;
+            springMaximumSpeed = 40f;
+        }
+
+        public void ApplySpeedStrip(float multiplier, float duration)
+        {
+            if (!CanMove || !autoRun) return;
+            // Latest strip wins. Repeated contact never multiplies an existing boost.
+            speedMultiplier = Mathf.Clamp(multiplier, 0.72f, 1.4f);
+            speedEffectUntil = Time.time + Mathf.Max(0, duration);
+        }
+
+        private void ResetRunState()
+        {
+            speedMultiplier = 1f;
+            speedEffectUntil = -1f;
+            runStartsAt = Time.time + (autoRun ? 0.8f : 0);
+        }
+
         public void ReturnToCourse(Vector3 position, int section)
         {
             spawn = position;
@@ -161,6 +196,7 @@ namespace Ryan.RollABall
             springUntil = -1;
             lastGrounded = -1;
             jumpRequestedUntil = -1;
+            ResetRunState();
             CurrentLane = Mathf.Clamp(Mathf.RoundToInt(position.x / laneSpacing), -1, 1);
         }
 
@@ -180,6 +216,7 @@ namespace Ryan.RollABall
             jumpRequestedUntil = -1;
             lastGrounded = -1;
             springUntil = -1;
+            ResetRunState();
             CurrentLane = Mathf.Clamp(Mathf.RoundToInt(spawn.x / laneSpacing), -1, 1);
         }
 
