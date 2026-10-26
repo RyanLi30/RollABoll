@@ -79189,8 +79189,8 @@ MonoBehaviour:
   levelNumber: 2
   levelCount: 3
   levelTitle: Switch and Launch
-  nextScenePath: Assets/RollABall/Scenes/Level03.unity
-  firstScenePath: Assets/RollABall/Scenes/RollABallPrototype.unity
+  nextScenePath: Assets/Scenes/Level03.unity
+  firstScenePath: Assets/Scenes/RollABallPrototype.unity
 --- !u!4 &2064674290
 Transform:
   m_ObjectHideFlags: 0

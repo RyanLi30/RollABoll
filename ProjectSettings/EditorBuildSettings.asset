@@ -6,13 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/RollABall/Scenes/RollABallPrototype.unity
+    path: Assets/Scenes/RollABallPrototype.unity
     guid: 71ff857161e36447fa522ba01a72976c
   - enabled: 1
-    path: Assets/RollABall/Scenes/Level02.unity
+    path: Assets/Scenes/Level02.unity
     guid: 255ffa2d6404f422189bfa3c128e3e2d
   - enabled: 1
-    path: Assets/RollABall/Scenes/Level03.unity
+    path: Assets/Scenes/Level03.unity
     guid: 45d75889d2e3046cda1e886d515248ae
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity

@@ -2840,8 +2840,8 @@ MonoBehaviour:
   levelNumber: 1
   levelCount: 3
   levelTitle: Three Lane Express
-  nextScenePath: Assets/RollABall/Scenes/Level02.unity
-  firstScenePath: Assets/RollABall/Scenes/RollABallPrototype.unity
+  nextScenePath: Assets/Scenes/Level02.unity
+  firstScenePath: Assets/Scenes/RollABallPrototype.unity
 --- !u!4 &75119097
 Transform:
   m_ObjectHideFlags: 0

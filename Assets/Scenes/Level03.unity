@@ -90293,7 +90293,7 @@ MonoBehaviour:
   levelCount: 3
   levelTitle: Skyline Rush
   nextScenePath: 
-  firstScenePath: Assets/RollABall/Scenes/RollABallPrototype.unity
+  firstScenePath: Assets/Scenes/RollABallPrototype.unity
 --- !u!4 &2064674290
 Transform:
   m_ObjectHideFlags: 0

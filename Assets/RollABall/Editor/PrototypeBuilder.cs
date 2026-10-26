@@ -7,8 +7,8 @@ namespace Ryan.RollABall.Editor
 {
     public static class PrototypeBuilder
     {
-        public const string ScenePath = "Assets/RollABall/Scenes/RollABallPrototype.unity";
-        public static readonly string[] LevelPaths = { ScenePath, "Assets/RollABall/Scenes/Level02.unity", "Assets/RollABall/Scenes/Level03.unity" };
+        public const string ScenePath = "Assets/Scenes/RollABallPrototype.unity";
+        public static readonly string[] LevelPaths = { ScenePath, "Assets/Scenes/Level02.unity", "Assets/Scenes/Level03.unity" };
 
         public static void RegisterLevels()
         {

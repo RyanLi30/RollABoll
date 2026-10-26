@@ -13,7 +13,7 @@ namespace Ryan.RollABall
         public int levelCount = 3;
         public string levelTitle = "First Steps";
         public string nextScenePath;
-        public string firstScenePath = "Assets/RollABall/Scenes/RollABallPrototype.unity";
+        public string firstScenePath = "Assets/Scenes/RollABallPrototype.unity";
         public int Remaining { get; private set; }
         public bool HasWon { get; private set; }
         public float Elapsed { get; private set; }
