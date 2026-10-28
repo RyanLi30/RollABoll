@@ -144,7 +144,8 @@ namespace Ryan.RollABall
             GUI.Label(new Rect(42, 236, 300, 22), "LIME = BOOST  /  ORANGE = SLOW", subtitle);
             string speedState = player.RunStartsIn > 0 ? $"READY  {player.RunStartsIn:0.0}s" :
                 player.SpringInFlight ? "SPRING FLIGHT - A/D TO STEER" :
-                player.SpeedEffectRemaining > 0 ? $"{(player.SpeedMultiplier > 1 ? "BOOST" : "SLOW")}  x{player.SpeedMultiplier:0.00}  {player.SpeedEffectRemaining:0.0}s" : "CRUISE - KEEP MOVING";
+                player.SpeedMultiplier > 1 ? $"BOOST  x{player.SpeedMultiplier:0.00}  UNTIL SLOW" :
+                player.SpeedEffectRemaining > 0 ? $"SLOW  x{player.SpeedMultiplier:0.00}  {player.SpeedEffectRemaining:0.0}s" : "CRUISE - KEEP MOVING";
             GUI.Label(new Rect(42, 257, 300, 22), speedState, body);
             if (Time.time < noticeUntil)
             {

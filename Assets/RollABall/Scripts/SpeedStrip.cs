@@ -5,7 +5,7 @@ namespace Ryan.RollABall
     [RequireComponent(typeof(BoxCollider))]
     public sealed class SpeedStrip : MonoBehaviour
     {
-        public float multiplier = 1.35f;
+        public float multiplier = 2.5f;
         public float duration = 4f;
         private BallController occupant;
 

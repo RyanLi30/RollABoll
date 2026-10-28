@@ -149,12 +149,12 @@ namespace Ryan.RollABall.Editor
                 }
                 // Full-width teaching strips alternate with optional lane choices.
                 if (phase == 0)
-                    Strip(new Vector3(0, top, z - 20), 11.8f, 1.35f, world);
+                    Strip(new Vector3(0, top, z - 20), 11.8f, 2.5f, world);
                 else if (phase == 1)
-                    Strip(new Vector3(0, top, z - 20), 11.8f, .72f, world);
+                    Strip(new Vector3((i / 4) % 2 == 0 ? -4 : 4, top, z - 20), 3.7f, .72f, world);
                 else if (phase == 2)
                 {
-                    Strip(new Vector3(-4, top, z - 20), 3.7f, 1.4f, world);
+                    Strip(new Vector3(-4, top, z - 20), 3.7f, 2.5f, world);
                     Strip(new Vector3(4, top, z - 20), 3.7f, .72f, world);
                 }
                 AddCube(new Vector3(safeLane * 4, top + .85f, z - 3), game, cubes, pickups);

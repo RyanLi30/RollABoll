@@ -16,7 +16,8 @@ namespace Ryan.RollABall
         private float speedMultiplier = 1f;
         private float speedEffectUntil = -1f;
         private float runStartsAt;
-        public bool AutoRun => autoRun;
+        public bool AutoRun => autoRun || threeLaneMode;
+        public const float NormalJumpGravityScale = 4.5f;
         public float RunStartsIn => Mathf.Max(0, runStartsAt - Time.time);
         public float SpeedMultiplier => Time.time < speedEffectUntil ? speedMultiplier : 1f;
         public float SpeedEffectRemaining => Mathf.Max(0, speedEffectUntil - Time.time);
@@ -33,6 +34,8 @@ namespace Ryan.RollABall
         private float springUntil = -1f;
         private float springStarted = -1f;
         private float springSteeringTarget;
+        private float springTimeScale = 1f;
+        private bool normalJumpInFlight;
         public bool CanMove { get; set; } = true;
         public bool IsGrounded { get; private set; }
         public int Falls { get; private set; }
@@ -46,7 +49,9 @@ namespace Ryan.RollABall
             body = GetComponent<Rigidbody>();
             spawn = transform.position;
             body.linearDamping = 0;
-            runStartsAt = Time.time + (autoRun ? 1.8f : 0);
+            autoRun = AutoRun;
+            runStartsAt = Time.time;
+            if (AutoRun) body.linearVelocity = new Vector3(0, body.linearVelocity.y, maximumSpeed);
             CurrentLane = Mathf.Clamp(Mathf.RoundToInt(spawn.x / laneSpacing), -1, 1);
         }
 
@@ -81,7 +86,11 @@ namespace Ryan.RollABall
             IsGrounded = body.linearVelocity.y <= 0.25f
                 && Physics.Raycast(body.position, Vector3.down, out var ground, 0.79f, ~0, QueryTriggerInteraction.Ignore)
                 && ground.collider.attachedRigidbody != body;
-            if (IsGrounded) lastGrounded = Time.time;
+            if (IsGrounded)
+            {
+                lastGrounded = Time.time;
+                normalJumpInFlight = false;
+            }
             if (IsGrounded && Time.time > springStarted + 0.2f && SpringInFlight)
             {
                 springUntil = -1;
@@ -95,6 +104,23 @@ namespace Ryan.RollABall
                 jumpRequestedUntil = -1;
                 lastGrounded = -1;
                 IsGrounded = false;
+                normalJumpInFlight = true;
+            }
+            // Time-scale the entire spring arc so boost changes speed without overshooting.
+            if (SpringInFlight)
+                body.AddForce(Physics.gravity * (springTimeScale * springTimeScale - 1f), ForceMode.Acceleration);
+            else
+            {
+                if (normalJumpInFlight)
+                    body.AddForce(Physics.gravity * (NormalJumpGravityScale - 1f), ForceMode.Acceleration);
+                else
+                {
+                    // Rolling off an edge is a fall, never an automatic jump.
+                    if (body.linearVelocity.y > 0)
+                        body.linearVelocity = new Vector3(body.linearVelocity.x, 0, body.linearVelocity.z);
+                    if (!IsGrounded)
+                        body.AddForce(Physics.gravity * 19f, ForceMode.Acceleration);
+                }
             }
             if (!SpringInFlight && !threeLaneMode)
                 body.AddForce(new Vector3(movement.x, 0, movement.y) * acceleration * (IsGrounded ? 1f : 0.55f), ForceMode.Acceleration);
@@ -108,15 +134,15 @@ namespace Ryan.RollABall
                 {
                     // Read held input, including keys already held before touching the board.
                     // Releasing a key keeps the adjusted landing target instead of undoing it.
-                    springSteeringTarget = Mathf.Clamp(springSteeringTarget + movement.x * 12f * Time.fixedDeltaTime, -laneSpacing, laneSpacing);
+                    springSteeringTarget = Mathf.Clamp(springSteeringTarget + movement.x * 12f * springTimeScale * Time.fixedDeltaTime, -laneSpacing, laneSpacing);
                     CurrentLane = Mathf.Clamp(Mathf.RoundToInt(springSteeringTarget / laneSpacing), -1, 1);
-                    horizontal.x = Mathf.Clamp((springSteeringTarget - body.position.x) * 16f, -18f, 18f);
-                    horizontal.z *= 1f / (1f + 0.35f * Time.fixedDeltaTime);
+                    horizontal.x = Mathf.Clamp((springSteeringTarget - body.position.x) * 16f * springTimeScale, -18f * springTimeScale, 18f * springTimeScale);
+                    // Keep launch speed through the gap instead of braking in the air.
                 }
                 else
                 {
                     horizontal.x = Mathf.Clamp((CurrentLane * laneSpacing - body.position.x) * 12f, -18f, 18f);
-                    float target = autoRun ? (Time.time >= runStartsAt ? TargetForwardSpeed : 0)
+                    float target = AutoRun ? TargetForwardSpeed
                         : movement.y * maximumSpeed * (movement.y < 0 ? 0.65f : 1f);
                     horizontal.z = Mathf.MoveTowards(horizontal.z, target, acceleration * Time.fixedDeltaTime);
                 }
@@ -136,15 +162,18 @@ namespace Ryan.RollABall
             float gravity = -Physics.gravity.y;
             float discriminant = upwardSpeed * upwardSpeed - 2 * gravity * (destination.y - body.position.y);
             if (gravity <= 0 || discriminant <= 0) return false;
-            float flight = (upwardSpeed + Mathf.Sqrt(discriminant)) / gravity;
+            float speedScale = AutoRun ? SpeedMultiplier : 1f;
+            float flight = (upwardSpeed + Mathf.Sqrt(discriminant)) / gravity / speedScale;
             var displacement = destination - body.position;
             displacement.y = 0;
-            // Compensate for the same horizontal air drag used by FixedUpdate.
-            var launch = displacement * (0.35f / (1f - Mathf.Exp(-0.35f * flight)));
-            if (launch.magnitude > springMaximumSpeed) return false;
-            body.linearVelocity = new Vector3(launch.x, upwardSpeed, launch.z);
+            // Scale horizontal velocity, upward velocity and gravity together.
+            var launch = displacement / flight;
+            if (launch.magnitude > springMaximumSpeed * speedScale) return false;
+            springTimeScale = speedScale;
+            body.linearVelocity = new Vector3(launch.x, upwardSpeed * speedScale, launch.z);
+            normalJumpInFlight = false;
             springStarted = Time.time;
-            springUntil = Time.time + flight + 0.15f;
+            springUntil = Time.time + flight + 0.15f / speedScale;
             jumpRequestedUntil = -1;
             lastGrounded = -1;
             IsGrounded = false;
@@ -167,7 +196,7 @@ namespace Ryan.RollABall
         {
             ConfigureThreeLanes(forwardSpeed);
             autoRun = true;
-            jumpSpeed = 6.5f;
+            jumpSpeed = 12f;
             springMaximumSpeed = 40f;
         }
 
@@ -175,15 +204,18 @@ namespace Ryan.RollABall
         {
             if (!CanMove || !autoRun) return;
             // Latest strip wins. Repeated contact never multiplies an existing boost.
-            speedMultiplier = Mathf.Clamp(multiplier, 0.72f, 1.4f);
-            speedEffectUntil = Time.time + Mathf.Max(0, duration);
+            speedMultiplier = Mathf.Clamp(multiplier, 0.72f, 2.5f);
+            // Boost lasts until a slow strip or a run reset; it never stacks.
+            speedEffectUntil = speedMultiplier > 1f ? float.PositiveInfinity : Time.time + Mathf.Max(0, duration);
         }
 
         private void ResetRunState()
         {
             speedMultiplier = 1f;
             speedEffectUntil = -1f;
-            runStartsAt = Time.time + (autoRun ? 0.8f : 0);
+            runStartsAt = Time.time;
+            normalJumpInFlight = false;
+            if (AutoRun) body.linearVelocity = new Vector3(0, body.linearVelocity.y, maximumSpeed);
         }
 
         public void ReturnToCourse(Vector3 position, int section)
